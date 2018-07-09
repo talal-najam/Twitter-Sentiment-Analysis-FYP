@@ -1,0 +1,52 @@
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%trump%' ORDER BY unix DESC LIMIT 1000': database is locked
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%trump%' ORDER BY unix DESC LIMIT 1000': database is locked
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%ronaldo%' ORDER BY unix DESC LIMIT 1000': database is locked
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%ronaldo%' ORDER BY unix DESC LIMIT 1000': database is locked
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%ronaldo%' ORDER BY unix DESC LIMIT 1000': database is locked
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%england%' ORDER BY unix DESC LIMIT 1000': database is locked
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%england%' ORDER BY unix DESC LIMIT 1000': database is locked
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%england%' ORDER BY unix DESC LIMIT 1000': database is locked
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%england%' ORDER BY unix DESC LIMIT 1000': database is locked
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%england%' ORDER BY unix DESC LIMIT 1000': database is locked
+Execution failed on sql 'SELECT * FROM sentiment WHERE tweet LIKE '%england%' ORDER BY unix DESC LIMIT 1000': database is locked

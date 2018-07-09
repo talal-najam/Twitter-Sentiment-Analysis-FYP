@@ -1,0 +1,13 @@
+{% extends 'layout.html' %} {% block body %}
+<div class="jumbotron text-center">
+    <h1>Sentiment Analyzer</h1>
+    <p class="lead">A work in progress web application to perform sentiment analysis based on user input.</p>
+
+    {% from "includes/_formhelpers.html" import render_field %}
+    <form method="POST" action="">
+        <a href="/sentiment" class="btn btn-primary">Twitter</a>
+        <a href="/manualsentiment" class="btn btn-success">Manual</a>
+        <a href="/dashapp" class="btn btn-danger">Live Sentiment</a>
+    </form>
+</div>
+{% endblock %}

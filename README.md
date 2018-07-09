@@ -1,0 +1,2 @@
+#Dash Live Sentiment Graph Application
+This app is a work in progress to play around with the dash library and integrate it with the sentiment analysis project I am working on. The goal is to display a live updated graph that displays the sentiment towards the word/words chosen by  the user.
