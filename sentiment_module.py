@@ -38,11 +38,13 @@ class VoteClassifier(ClassifierI):
         for c in self._classifiers:
             v = c.classify(features)
             votes.append(v)
-
-        choice_votes = votes.count(mode(votes))
-        conf = choice_votes / len(votes)
-        return conf
-        
+            # print("classifier "+str(c)+" predicted "+v)
+        try:
+            choice_votes = votes.count(mode(votes))
+            conf = choice_votes / len(votes)
+            return conf
+        except Exception as e:
+            print(str(e))
 short_pos = open("short_reviews/positive.txt","r").read()
 short_neg = open("short_reviews/negative.txt","r").read()
 
@@ -93,9 +95,9 @@ open_file = open("LIMITED_PICKLES/originalnaivebayes5k.pickle", "rb")
 classifier = pickle.load(open_file)
 open_file.close()
 
-open_file = open("LIMITED_PICKLES/MNB_classifier5k.pickle", "rb")
-MNB_classifier = pickle.load(open_file)
-open_file.close()
+# open_file = open("LIMITED_PICKLES/MNB_classifier5k.pickle", "rb")
+# MNB_classifier = pickle.load(open_file)
+# open_file.close()
 
 open_file = open("LIMITED_PICKLES/BernoulliNB_classifier5k.pickle", "rb")
 BernoulliNB_classifier = pickle.load(open_file)
@@ -113,15 +115,16 @@ open_file = open("LIMITED_PICKLES/LinearSVC_classifier5k.pickle", "rb")
 LinearSVC_classifier = pickle.load(open_file)
 open_file.close()
 
-# open_file = open("sentdex_pickled_algos/NuSVC_classifier5k.pickle", "rb")
-# NuSVC_classifier = pickle.load(open_file)
-# open_file.close()
+open_file = open("LIMITED_PICKLES/NuSVC_classifier5k.pickle", "rb")
+NuSVC_classifier = pickle.load(open_file)
+open_file.close()
 
 voted_classifier = VoteClassifier(
-                                #   NuSVC_classifier,
+                                  NuSVC_classifier,
                                   classifier,
                                   LinearSVC_classifier,
-                                  MNB_classifier,
+                                  SGDClassifier_classifier,
+                                #   MNB_classifier,
                                   BernoulliNB_classifier,
                                   LogisticRegression_classifier)
 

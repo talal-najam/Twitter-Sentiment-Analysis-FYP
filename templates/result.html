@@ -1,0 +1,19 @@
+{% extends 'layout.html' %} {% block body %} {% if pos_tweets %}
+<div class="text-center">
+    <h1>Positive tweets</h1>
+    <ul>
+        {% for tweet in pos_tweets %}
+        <li>{{tweet}}</li>
+        {% endfor %}
+    </ul>
+</div>
+<hr>
+<div class="text-center">
+    <h1>Negative tweets</h1>
+    <ul>
+        {% for tweet in neg_tweets %}
+        <li>{{tweet}}</li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %} {% endblock %}

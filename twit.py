@@ -21,10 +21,12 @@ class SentimentAnalysis:
     def __init__(self):
         self.tweets = []
         self.tweetText = []
+        self.positiveTweets = []
+        self.negativeTweets = []
 
     def analyzeTwitter(self, keyword, number):
 
-        # authenticating
+        # auth
         consumerKey = "vPocvAU7dFdrGhbBxkt4Ab6tu"
         consumerSecret = "V2qoxlzAqtRs5NQ5ifJI3Tx0DsaCycUpBaXvKTSi1LCTWV2VG2"
         accessToken = "1139826878-qBQpLdy1E96PJrMLpg9IFbT11QuZDbV3dydHIHp"
@@ -42,10 +44,10 @@ class SentimentAnalysis:
         self.tweets = tweepy.Cursor(api.search, q=keyword, lang = "en").items(number)
 
         # Open/create a file to append data to
-        csvFile = open('result.csv', 'a')
+        # csvFile = open('result.csv', 'a')
 
         # Use csv writer
-        csvWriter = csv.writer(csvFile)
+        # csvWriter = csv.writer(csvFile)
 
 
         # creating some variables to store info
@@ -68,6 +70,11 @@ class SentimentAnalysis:
             # print(analysis.sentiment)  # print tweet's polarity
             polarity += analysis.sentiment.polarity  # adding up polarities to find the average later
 
+            if analysis.sentiment.polarity >= 0:
+                self.positiveTweets.append(tweet.text)
+            else:
+                self.negativeTweets.append(tweet.text)
+
             if (analysis.sentiment.polarity == 0):  # adding reaction of how people are reacting to find average later
                 neutral += 1
             elif (analysis.sentiment.polarity > 0 and analysis.sentiment.polarity <= 0.3):
@@ -85,8 +92,8 @@ class SentimentAnalysis:
 
 
         # Write to csv and close csv file
-        csvWriter.writerow(self.tweetText)
-        csvFile.close()
+        # csvWriter.writerow(self.tweetText)
+        # csvFile.close()
 
         # finding average of how people are reacting
         positive = self.percentage(positive, number)
@@ -100,37 +107,39 @@ class SentimentAnalysis:
         # finding average reaction
         polarity = polarity / number
 
-        # printing out data
-        print("How people are reacting on " + keyword + " by analyzing " + str(number) + " tweets.")
-        print()
-        print("General Report: ")
+        # # printing out data
+        # print("How people are reacting on " + keyword + " by analyzing " + str(number) + " tweets.")
+        # print()
+        # print("General Report: ")
 
-        if (polarity == 0):
-            print("Neutral")
-        elif (polarity > 0 and polarity <= 0.3):
-            print("Weakly Positive")
-        elif (polarity > 0.3 and polarity <= 0.6):
-            print("Positive")
-        elif (polarity > 0.6 and polarity <= 1):
-            print("Strongly Positive")
-        elif (polarity > -0.3 and polarity <= 0):
-            print("Weakly Negative")
-        elif (polarity > -0.6 and polarity <= -0.3):
-            print("Negative")
-        elif (polarity > -1 and polarity <= -0.6):
-            print("Strongly Negative")
+        # if (polarity == 0):
+        #     print("Neutral")
+        # elif (polarity > 0 and polarity <= 0.3):
+        #     print("Weakly Positive")
+        # elif (polarity > 0.3 and polarity <= 0.6):
+        #     print("Positive")
+        # elif (polarity > 0.6 and polarity <= 1):
+        #     print("Strongly Positive")
+        # elif (polarity > -0.3 and polarity <= 0):
+        #     print("Weakly Negative")
+        # elif (polarity > -0.6 and polarity <= -0.3):
+        #     print("Negative")
+        # elif (polarity > -1 and polarity <= -0.6):
+        #     print("Strongly Negative")
 
-        print()
-        print("Detailed Report: ")
-        print(str(positive) + "% people thought it was positive")
-        print(str(wpositive) + "% people thought it was weakly positive")
-        print(str(spositive) + "% people thought it was strongly positive")
-        print(str(negative) + "% people thought it was negative")
-        print(str(wnegative) + "% people thought it was weakly negative")
-        print(str(snegative) + "% people thought it was strongly negative")
-        print(str(neutral) + "% people thought it was neutral")
+        # print()
+        # print("Detailed Report: ")
+        # print(str(positive) + "% people thought it was positive")
+        # print(str(wpositive) + "% people thought it was weakly positive")
+        # print(str(spositive) + "% people thought it was strongly positive")
+        # print(str(negative) + "% people thought it was negative")
+        # print(str(wnegative) + "% people thought it was weakly negative")
+        # print(str(snegative) + "% people thought it was strongly negative")
+        # print(str(neutral) + "% people thought it was neutral")
 
         self.plotPieChart(positive, wpositive, spositive, negative, wnegative, snegative, neutral, keyword, number)
+
+        return self.positiveTweets, self.negativeTweets
 
 
     def cleanTweet(self, tweet):

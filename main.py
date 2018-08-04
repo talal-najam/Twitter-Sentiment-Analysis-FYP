@@ -1,21 +1,25 @@
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging
-from wtforms import Form, StringField, TextAreaField, PasswordField, validators
 from flask_mysqldb import MySQL
-# from passlib.hash import sha256_crypt
+# from passlib.hash import sha256_crypt (for password hasing in database)
 from functools import wraps
 from twit import SentimentAnalysis
 import time
+from sentiment_shifter import should_invert
 import sentiment_module as ml_classifiers
 from textblob import TextBlob as tb
+from forms import RegisterForm
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from score_calculator import sentiment_score
 
 import dash
 from dash.dependencies import Input, Output
 import dash_core_components as dcc
 import dash_html_components as html
-import pandas as pd
-pd.core.common.is_list_like = pd.api.types.is_list_like
-from pandas_datareader import data as web
-from datetime import datetime as dt
+# import pandas as pd
+# pd.core.common.is_list_like = pd.api.types.is_list_like
+# from pandas_datareader import data as web
 
 # from twitterconnection import search_tweets
 
@@ -28,12 +32,15 @@ from datetime import datetime as dt
 # 5. Plot the results on the graph
 # 6. Return the result effectively and display them
 # 7. Extend functionality such as login, database connections, registeration if there is still time
+# 8. Use the preProcessText function 
 # #################################################################################################
 
 ##########################################################################
 ###                         DEV COMMENTS
-### I'm not sure if I should do dash here or make another module for it
-###
+### > I'm not sure if I should do dash here or make another module for it
+### > Added negation handler and score_calculator 23/7/2018
+### > Need to integrate the lexicon score_calcualtor and negation handler
+###   to main.py to either calculate every time or when conf < 1
 ###########################################################################
 
 # Init Flask
@@ -45,23 +52,30 @@ dashApp = dash.Dash(__name__, server=app, url_base_pathname='/dashapp')
 ############################## Start Dash ####################################
 
 dashApp.layout = html.Div(children=[
-html.H1(children='Dash App')])
+    html.H1(children='Sentiment Graph'),
 
-dashApp.layout = html.Div([
-    html.H1('Live Twitter Sentiment'),
-    dcc.Dropdown(
-        id='my-dropdown',
-        options=[
-            {'label': 'Coke', 'value': 'COKE'},
-            {'label': 'Tesla', 'value': 'TSLA'},
-            {'label': 'Apple', 'value': 'AAPL'}
-        ],
-        value='COKE'
-    ),
-    dcc.Graph(id='my-graph')
+    html.Div(children='''
+        Dash: A web application framework
+    '''),
+
+    dcc.Graph(
+        id='my-graph',
+        figure={
+            'data': [
+                {'x': [1,2,3], 'y': [4,1,2], 'type': 'line', 'name': 'sf'},
+                {'x': [1,2,3], 'y': [2,4,5], 'type': 'bar', 'name': 'karachi'},
+            ],
+            'layout': {
+                'title': 'Sentiment Visualization Graph'
+            }
+        }
+    )
 ])
 
-@dashApp.callback(Output('my-graph', 'figure'), [Input('my-dropdown', 'value')])
+
+@dashApp.callback(Output('my-graph', 'figure'), 
+    # [Input('my-dropdown', 'value')]
+    )
 def update_graph(selected_dropdown_value):
     return {
         'data': [{
@@ -82,6 +96,8 @@ app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
 # init MYSQL
 mysql = MySQL(app)
 
+stop_words = set(stopwords.words("english"))
+
 # Init VaderSentiment
 twitter_analyzer = SentimentAnalysis()
 
@@ -89,6 +105,7 @@ twitter_analyzer = SentimentAnalysis()
 @app.route('/')
 def index():
     return render_template('home.html')
+
 
 # #########################################################
 # PUBLIC Route
@@ -99,15 +116,17 @@ def index():
 def sentiment():
     if request.method == 'POST':
         # Get Form Fields
-        input = request.form['keyword']
-        quantity = int(request.form['quantity'])
-        if len(input) > 0 or quantity > 0 :
-        # Fetch tweets from twitter and perform sentiment analysis on the given data
-            twitter_analyzer.analyzeTwitter(input, quantity)
-
-            return redirect(url_for('sentiment'))
-        else:
+        try:
+            input = request.form['keyword']
+            quantity = int(request.form['quantity'])
             flash('Please enter some text to be analyzed', 'danger')
+            if len(input) > 0 or quantity > 0 :
+            # Fetch tweets from twitter and perform sentiment analysis on the given data
+                pos_tweeets, neg_tweets = twitter_analyzer.analyzeTwitter(input, quantity)
+            else:
+                flash('Please enter some text to be analyzed', 'danger')
+        except ValueError:
+            flash('Please enter valid text to be analyzed', 'danger')
     return render_template('sentiment.html', title="Twitter Sentiment")
 
 
@@ -134,16 +153,58 @@ def manualSentiment():
                 #     flash("The sentence has a Negative sentiment", 'success')
                 # else:
                 #     flash("The sentence has an Ambiguous sentiment", 'success')
-                result = ml_classifiers.sentiment(input)
-                flash('The result is ' + str(result), 'info')
-            except:
-                flash('A server side error has occured', 'danger')
+
+                # Check for adjectives
+                allowed_word_types = ["J", "V"]
+                pos = nltk.pos_tag(input)
+                has_allowed_words = False
+                all_words = []
+                for w in pos:
+                    if w[1][0] in stop_words:
+                        continue
+                    elif w[1][0] in allowed_word_types:
+                        all_words.append(w[0].lower())
+                        has_allowed_words = True
+
+                if has_allowed_words:
+                    # Classify with machine learning classifier
+                    result = ml_classifiers.sentiment(input)
+
+
+                    # Negation Handling
+                    # Check for sentiment inversion
+                    if result[0] == 'pos' and should_invert(input):
+                        result = ('neg', result[1])
+                    elif result[0] == 'neg' and should_invert(input):
+                        result = ('pos', result[1])
+
+
+                    # Sentiment score calculation
+                    # Might need filtering before calculating the score
+                    score = sentiment_score(input)
+                    if score > 0 and should_invert(input):
+                        score *= -1
+                    elif score < 0 and should_invert(input):
+                        score *= 1
+
+
+                    if result[0] == 'pos':
+                        flash('The sentiment of the text is Positive with the confidence of ' + str(result[1]*100) + "%" + ". Manual calculated score = " + str(score), 'info')
+                    elif result[0] == 'neg':
+                        flash('The sentiment of the text is Negative with the confidence of ' + str(result[1]*100) + "%" + ". Manual calculated score = " + str(score), 'info')
+                else:
+                    flash('The sentiment of the text is Neutral with the confidence of 100%. Manual calculated score = 0', 'info')
+
+
+            except Exception as e:
+                flash('A server side error has occured ' + "Exception: \"" + str(e) + "\"" , 'danger')
 
 
             return redirect(url_for('manualSentiment', title="Manual Sentiment"))
         else:
             flash('Please enter some text to be analyzed', 'danger')
     return render_template('manualsentiment.html')
+
 
 def cohesive_classify(text):
 
@@ -169,114 +230,9 @@ def cohesive_classify(text):
     return result
 
 
-
-# Twitter Analysis route
-# @app.route('/twitter_analysis', methods=['GET', 'POST'])
-# def twitter_analysis():
-#     # Todo implementatoin here
-#     render_template('twitter_analysis.html')
-
-# Sentiment Analysis function
-# def sentiment_of(someinput):
-#     vader_sentiment = analyzer.polarity_scores(someinput)
-#     if not vader_sentiment['neg'] > 0.1:
-#         if vader_sentiment['pos']-vader_sentiment['neg'] > 0:
-#             # This line does not seem right, we should not consider just the
-#             # positive value but the overall compoud value and somehow make a score.
-#             return ("Positive sentiment with a sentiment score of %s%%" % (vader_sentiment['pos']*100))
-#     elif not vader_sentiment['pos'] > 0.1:
-#         if vader_sentiment['pos']-vader_sentiment['neg'] <= 0:
-#             # This line does not seem right, we should not consider just the
-#             # negative value but the overall compoud value and somehow make a score.
-#             return ("Negative sentiment with a sentiment score of %s%%" % (vader_sentiment['neg']*100))
-#     else:
-#         return ("This might be a neutral sentiment lol.")
-
-class RegisterForm(Form):
-    name = StringField('Name', [validators.Length(min=1, max=50)])
-    username = StringField('Username', [validators.Length(min=4, max=25)])
-    email = StringField('Email', [validators.Length(min=6, max=50)])
-    password = PasswordField('Password', [
-        validators.DataRequired(),
-        validators.EqualTo('confirm', message='Passwords do not match')
-    ])
-    confirm = PasswordField('Confirm Password')
-
-
-# Register route
-# @app.route('/register', methods=['GET', 'POST'])
-# def register():
-#     form = RegisterForm(request.form)
-#     if request.method == 'POST' and form.validate():
-#         # Todo implementation here
-#         name = form.name.data
-#         email = form.email.data
-#         username = form.username.data
-#         password = sha256_crypt.encrypt(str(form.password.data))
-
-#         # create cursor
-#         cur = mysql.connection.cursor()
-
-#         # execute query
-#         cur.execute('INSERT INTO users(name, email, username, password) VALUES(%s, %s, %s, %s)' , (name, email, username, password))
-
-#         # commit to DB
-#         mysql.connection.commit()
-
-#         # close cursor
-#         cur.close()
-
-#         # display success
-#         flash('You have successfully registered!', 'success')
-
-#         return redirect(url_for('index'))
-#     return render_template('register.html', form=form)
-
-# login route
-# @app.route('/login', methods=['GET', 'POST'])
-# def login():
-#     if request.method == 'POST':
-#         # Get form fields
-#         username = request.form['username']
-#         password_candidate = request.form['password']
-
-#         # Create cursor
-#         cur = mysql.connection.cusror()
-
-#         # Get user by Username
-#         result = cur.execute('SELECT * FROM users WHERE username = %s', [username])
-
-#         if result > 0:
-#             # Get stored hash
-#             data = cur.fetchone()
-#             password = data['password']
-
-#             # Compare Passwords
-#             if sha256_crypt.verify(password_candidate, password):
-#                 # Passed
-#                 session['logged_in'] = True
-#                 session['username'] = username
-
-#                 flash('You are now logged in', 'success')
-#                 return redirect(url_for('dashboard'))
-#             else:
-#                 error = 'Invalid login'
-#                 return render_template('login.html', error=error)
-#             # Close connection
-#             cur.close()
-#         else:
-#             error = 'Username not found'
-#             return render_template('login.html', error=error)
-
-
-#         return redirect(url_for('index'))
-#     return render_template('login.html')
-
-# Dashboard route
-# @app.route('/dashboard')
-# def dashboard():
-#     return render_template('dashboard.html')
-
+def preprocess_text(text):
+    filtered_sentence = [w for w in text if not w in set(nltk.corpus.stopwords.words("english"))]
+    return filtered_sentence
 
 
 # Call main method/run app
