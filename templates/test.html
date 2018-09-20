@@ -1,0 +1,26 @@
+{% extends 'layout.html' %}
+{% block body %} 
+
+	<div class="jumbotron">
+		<h2 class="text-center m-0 p-0">Top 3 Tweets on "{{ keyword }}"</h2>
+		<ul class="list-group dec text-justfiy">
+			{% for tweet in total_tweets[:3] %}
+				{% if tweet[1] == 1 %}
+		    	<li class="list-group-item list-group-item-success">{{loop.index}}: {{tweet[0]}}</li>
+				{% elif tweet[1] == -1 %}
+		    	<li class="list-group-item list-group-item-danger">{{loop.index}}: {{tweet[0]}}</li>
+				{% elif tweet[1] == 0 %}
+		    	<li class="list-group-item list-group-item-warning">{{loop.index}}: {{tweet[0]}}</li>
+				{% endif %}
+			{% endfor %} 
+		</ul>
+	
+		<div style="margin: 0"  class="row text-center">
+			<div style="margin-bottom: 2rem" class="lead  ">How people are reacting on {{ keyword }} based on analyzing {{ quantity }} tweets.</div>
+			<p>Green: Manual scores</p>
+			<p>Blue: Classifier predictions</p>
+			<img style="margin: 0" src="data:image/png;base64,{{ plot_url }}" width="800">'
+		</div>
+	</div>
+	
+{% endblock %}

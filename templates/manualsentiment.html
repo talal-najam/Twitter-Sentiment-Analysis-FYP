@@ -1,16 +1,14 @@
-{% extends 'layout.html' %}
-
-{% block body %}
-    <div class="jumbotron text-center">
-        <h1>Sentiment Analyzer</h1>
-        <p class="lead">Enter a phrase or a sentence to test the capabiliy of the sentiment analyzer</p>
-        <form method="POST">
-            <div class="form-group">
-                <input class="form-control" type="text" name="keyword" placeholder="Write a movie review e.g. The plot of this movie is bad.">
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Submit" class="btn btn-primary">
-            </div>
-        </form>
-    </div>
+{% extends 'layout.html' %} {% block body %}
+<div class="jumbotron text-center">
+    <h1>Sentiment Analyzer</h1>
+    <p class="lead">Enter a phrase or a sentence to be analyzed</p>
+    <form method="POST">
+        <div class="form-group">
+            <input class="form-control" autocomplete="off" type="text" name="keyword" placeholder="Write a movie review e.g. The plot of this movie is bad.">
+        </div>
+        <div class="form-group">
+            <input type="submit" value="Submit" class="btn btn-primary">
+        </div>
+    </form>
+</div>
 {% endblock %}

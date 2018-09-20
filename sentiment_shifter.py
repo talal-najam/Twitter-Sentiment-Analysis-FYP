@@ -15,7 +15,7 @@ def handle_negation(review):
     # Check if mod count(NOT_) 2 == 0? pos : neg
     # review = "I did not like this movie at all"
 
-    negations = ["n't", "not", "couldnt", "shouldnt", "wont", "never"]
+    negations = ["n't", "not", "couldnt", "shouldnt", "wont"]
     punctuations = [".", ","]
     all_words = []
 
@@ -50,12 +50,10 @@ def handle_negation(review):
 # print(handle_negation("Hi, I'm talal. I don't like you and any of this movies."))
 
 def should_invert(text):
-    # Check if words contain "n't", "not"
-    # Add string "NOT_" to the following words in the sentence
-    # Check if mod count(NOT_) 2 == 0? pos : neg
-    # text = "I did not like this movie at all"
+    # Check if negations mod 2 == 0? pos : neg
+    # text = "I did not not like this movie at all"
 
-    negations = ["n't", "not", "couldnt", "shouldnt", "wont", "never"]
+    negations = ["n't", "not", "couldnt", "shouldnt", "wont"]
     punctuations = [".", ","]
     all_words = []
 
@@ -67,11 +65,11 @@ def should_invert(text):
     for word in words:
         if word in negations:
             neg_word_count += 1
+        if word == ".":
+            neg_word_count = 0
 
-    # TODO aggregate the NOT_s in the sentence, if mod % 2 == 0, it is positive else negative
     if neg_word_count % 2 == 0:
         return False
     else:
         return True
 
-# print(should_invert(tweet))

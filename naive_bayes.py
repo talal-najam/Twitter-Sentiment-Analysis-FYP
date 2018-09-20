@@ -26,8 +26,7 @@ class NaiveBayesClassifier(ClassifierI):
 
     def prob_classify(self, featureset):
         # Discard any feature names that we've never seen before.
-        # Otherwise, we'll just assign a probability of 0 to
-        # everything.
+        # Otherwise, we'll just assign a probability of 0 to everything
         featureset = featureset.copy()
         for fname in list(featureset.keys()):
             for label in self._labels:
@@ -37,8 +36,7 @@ class NaiveBayesClassifier(ClassifierI):
                 #print 'Ignoring unseen feature %s' % fname
                 del featureset[fname]
 
-        # Find the log probabilty of each label, given the features.
-        # Start with the log probability of the label itself.
+        # Find the log probabilty of each label, given the features by starting with the label itself.
         logprob = {}
         for label in self._labels:
             logprob[label] = self._label_probdist.logprob(label)
@@ -169,16 +167,3 @@ class NaiveBayesClassifier(ClassifierI):
             feature_probdist[label, fname] = probdist
 
         return cls(label_probdist, feature_probdist)
-
-
-##//////////////////////////////////////////////////////
-##  Demo
-##//////////////////////////////////////////////////////
-
-# def demo():
-#     from nltk.classify.util import names_demo
-#     classifier = names_demo(NaiveBayesClassifier.train)
-#     classifier.show_most_informative_features()
-
-# if __name__ == '__main__':
-#     print('hi')

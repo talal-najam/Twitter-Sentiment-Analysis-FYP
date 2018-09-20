@@ -125,7 +125,7 @@ voted_classifier = VoteClassifier(
                                   LinearSVC_classifier,
                                   SGDClassifier_classifier,
                                 #   MNB_classifier,
-                                  BernoulliNB_classifier,
+                                  # BernoulliNB_classifier,
                                   LogisticRegression_classifier)
 
 def sentiment(text):

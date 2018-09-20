@@ -1,6 +1,13 @@
 import sys,tweepy,csv,re
 from textblob import TextBlob
 import matplotlib.pyplot as plt
+import sentiment_module as ml_classifiers
+from sentiment_shifter import should_invert
+import nltk
+from nltk.tokenize import word_tokenize
+from nltk.corpus import stopwords
+from score_calculator import sentiment_score
+
 
 """
 TODO: 
@@ -16,154 +23,167 @@ TODO:
 
 """
 
-class SentimentAnalysis:
+stop_words = set(stopwords.words("english"))
 
-    def __init__(self):
-        self.tweets = []
-        self.tweetText = []
-        self.positiveTweets = []
-        self.negativeTweets = []
+def analyzeTwitter(keyword, number):
 
-    def analyzeTwitter(self, keyword, number):
+    # auth
+    consumerKey = "vPocvAU7dFdrGhbBxkt4Ab6tu"
+    consumerSecret = "V2qoxlzAqtRs5NQ5ifJI3Tx0DsaCycUpBaXvKTSi1LCTWV2VG2"
+    accessToken = "1139826878-qBQpLdy1E96PJrMLpg9IFbT11QuZDbV3dydHIHp"
+    accessTokenSecret = "fu0igad1yHFFvP2rvNPLk2aOjTaAPaCOJaL2JXKVpn5T6"
 
-        # auth
-        consumerKey = "vPocvAU7dFdrGhbBxkt4Ab6tu"
-        consumerSecret = "V2qoxlzAqtRs5NQ5ifJI3Tx0DsaCycUpBaXvKTSi1LCTWV2VG2"
-        accessToken = "1139826878-qBQpLdy1E96PJrMLpg9IFbT11QuZDbV3dydHIHp"
-        accessTokenSecret = "fu0igad1yHFFvP2rvNPLk2aOjTaAPaCOJaL2JXKVpn5T6"
+    tweets = []
+    positiveTweets = []
+    negativeTweets = []
+    total_tweets = []
+    total_tweets_analyzed = []
+    chart_classifier_results = []
 
-        auth = tweepy.OAuthHandler(consumerKey, consumerSecret)
-        auth.set_access_token(accessToken, accessTokenSecret)
-        api = tweepy.API(auth)
+    chartdict = {}
 
-        # input for term to be searched and how many tweets to search
-        # searchTerm = input("Enter Keyword/Tag to search about: ")
-        # NoOfTerms = int(input("Enter how many tweets to search: "))
+    auth = tweepy.OAuthHandler(consumerKey, consumerSecret)
+    auth.set_access_token(accessToken, accessTokenSecret)
+    api = tweepy.API(auth)
 
-        # searching for tweets
-        self.tweets = tweepy.Cursor(api.search, q=keyword, lang = "en").items(number)
+    # searching for tweets
+    tweets = tweepy.Cursor(api.search, q=keyword, lang = "en").items(number)
 
-        # Open/create a file to append data to
-        # csvFile = open('result.csv', 'a')
-
-        # Use csv writer
-        # csvWriter = csv.writer(csvFile)
-
-
-        # creating some variables to store info
-        polarity = 0
-        positive = 0
-        wpositive = 0
-        spositive = 0
-        negative = 0
-        wnegative = 0
-        snegative = 0
-        neutral = 0
+    # creating some variables to store info
+    polarity = 0
+    positive = 0
+    negative = 0
+    neutral = 0
+    result = 0
 
 
-        # iterating through tweets fetched
-        for tweet in self.tweets:
-            #Append to temp so that we can store in csv later. I use encode UTF-8
-            self.tweetText.append(self.cleanTweet(tweet.text).encode('utf-8'))
-            # print (tweet.text.translate(non_bmp_map))    #print tweet's text
-            analysis = TextBlob(tweet.text)
-            # print(analysis.sentiment)  # print tweet's polarity
-            polarity += analysis.sentiment.polarity  # adding up polarities to find the average later
+    # iterating through tweets fetched
+    for tweet in tweets:
 
-            if analysis.sentiment.polarity >= 0:
-                self.positiveTweets.append(tweet.text)
-            else:
-                self.negativeTweets.append(tweet.text)
+        #################CLASSIFICATION#################
+        # Clean the tweet text
+        text_tweet = tweet.text
 
-            if (analysis.sentiment.polarity == 0):  # adding reaction of how people are reacting to find average later
-                neutral += 1
-            elif (analysis.sentiment.polarity > 0 and analysis.sentiment.polarity <= 0.3):
-                wpositive += 1
-            elif (analysis.sentiment.polarity > 0.3 and analysis.sentiment.polarity <= 0.6):
-                positive += 1
-            elif (analysis.sentiment.polarity > 0.6 and analysis.sentiment.polarity <= 1):
-                spositive += 1
-            elif (analysis.sentiment.polarity > -0.3 and analysis.sentiment.polarity <= 0):
-                wnegative += 1
-            elif (analysis.sentiment.polarity > -0.6 and analysis.sentiment.polarity <= -0.3):
-                negative += 1
-            elif (analysis.sentiment.polarity > -1 and analysis.sentiment.polarity <= -0.6):
-                snegative += 1
+        # Analyze with custom voted classifier
+        analysis = manual_rules(text_tweet.lower())
 
+        # Sample : (('pos', 1), 1)
+        if analysis[0][0] == 'pos' and analysis[1] >= 0:
+            result = 1 
+            positive += 1
+        elif analysis[0][0] == 'neg' and analysis[1] < 0:
+            result = -1
+            negative += 1
+        else:
+            result = 0
+            neutral += 1 
 
-        # Write to csv and close csv file
-        # csvWriter.writerow(self.tweetText)
-        # csvFile.close()
+        print("TWEET : " + text_tweet + " | ANALYSIS | " + str(analysis) + " | FINAL RESULT| " + str(result) + "\n")
 
-        # finding average of how people are reacting
-        positive = self.percentage(positive, number)
-        wpositive = self.percentage(wpositive, number)
-        spositive = self.percentage(spositive, number)
-        negative = self.percentage(negative, number)
-        wnegative = self.percentage(wnegative, number)
-        snegative = self.percentage(snegative, number)
-        neutral = self.percentage(neutral, number)
+        ################################################
 
-        # finding average reaction
-        polarity = polarity / number
-
-        # # printing out data
-        # print("How people are reacting on " + keyword + " by analyzing " + str(number) + " tweets.")
-        # print()
-        # print("General Report: ")
-
-        # if (polarity == 0):
-        #     print("Neutral")
-        # elif (polarity > 0 and polarity <= 0.3):
-        #     print("Weakly Positive")
-        # elif (polarity > 0.3 and polarity <= 0.6):
-        #     print("Positive")
-        # elif (polarity > 0.6 and polarity <= 1):
-        #     print("Strongly Positive")
-        # elif (polarity > -0.3 and polarity <= 0):
-        #     print("Weakly Negative")
-        # elif (polarity > -0.6 and polarity <= -0.3):
-        #     print("Negative")
-        # elif (polarity > -1 and polarity <= -0.6):
-        #     print("Strongly Negative")
-
-        # print()
-        # print("Detailed Report: ")
-        # print(str(positive) + "% people thought it was positive")
-        # print(str(wpositive) + "% people thought it was weakly positive")
-        # print(str(spositive) + "% people thought it was strongly positive")
-        # print(str(negative) + "% people thought it was negative")
-        # print(str(wnegative) + "% people thought it was weakly negative")
-        # print(str(snegative) + "% people thought it was strongly negative")
-        # print(str(neutral) + "% people thought it was neutral")
-
-        self.plotPieChart(positive, wpositive, spositive, negative, wnegative, snegative, neutral, keyword, number)
-
-        return self.positiveTweets, self.negativeTweets
+        total_tweets.append((text_tweet, result))
+        total_tweets_analyzed.append(analysis[1])
+        chart_classifier_results.append(result)
 
 
-    def cleanTweet(self, tweet):
-        # Remove Links, Special Characters etc from tweet
-        return ' '.join(re.sub("(@[A-Za-z0-9]+)|([^0-9A-Za-z \t]) | (\w +:\ / \ / \S +)", " ", tweet).split())
+        # print("Tweet #" + str(counter) + " : " + str(clean_tweet)[2:])
 
-    # function to calculate percentage
-    def percentage(self, part, whole):
-        temp = 100 * float(part) / float(whole)
-        return format(temp, '.2f')
 
-    def plotPieChart(self, positive, wpositive, spositive, negative, wnegative, snegative, neutral, keyword, number):
-        labels = ['Positive [' + str(positive) + '%]', 'Weakly Positive [' + str(wpositive) + '%]','Strongly Positive [' + str(spositive) + '%]', 'Neutral [' + str(neutral) + '%]',
-                  'Negative [' + str(negative) + '%]', 'Weakly Negative [' + str(wnegative) + '%]', 'Strongly Negative [' + str(snegative) + '%]']
-        sizes = [positive, wpositive, spositive, neutral, negative, wnegative, snegative]
-        colors = ['yellowgreen','lightgreen','darkgreen', 'gold', 'red','lightsalmon','darkred']
-        patches, texts = plt.pie(sizes, colors=colors, startangle=90)
-        plt.legend(patches, labels, loc="best")
-        plt.title('How people are reacting on ' + keyword + ' by analyzing ' + str(number) + ' Tweets.')
-        plt.axis('equal')
-        plt.tight_layout()
-        plt.show()
+    chartdict['x'] = [i for i, tweet in enumerate(total_tweets, 1)]
+    # Manually calculated scores
+    chartdict['y1'] = total_tweets_analyzed
+    # Classifier result
+    chartdict['y2'] = chart_classifier_results
+
+
+    # finding average of how people are reacting
+    positive_percentage = percentage(positive, number)
+    negative_percentage = percentage(negative, number)
+    neutral_percentage = percentage(neutral, number)
+
+    # finding average reaction
+    polarity = polarity / number
+
+    # pidict = {}
+    # pidict['positive'] = positive
+    # pidict['negative'] = negative
+    # pidict['neutral'] = neutral
+
+
+    # plotPieChart(positive, negative, neutral, keyword, number)
+
+    return positiveTweets, negativeTweets, total_tweets, chartdict, positive_percentage, negative_percentage, neutral_percentage
+
+
+# function to calculate percentage
+def percentage(part, whole):
+    temp = 100 * float(part) / float(whole)
+    return format(temp, '.2f')
+
+# def plotPieChart(positive, negative, neutral, keyword, number):
+
+   
+#     labels = ['Positive [' + str(positive) + '%]', 'Neutral [' + str(neutral) + '%]','Negative [' + str(negative) + '%]']
+#     sizes = [positive, neutral, negative]
+#     colors = ['darkgreen', 'gold', 'red']
+#     patches, texts = plt.pie(sizes, colors=colors, startangle=90)
+#     plt.legend(patches, labels, loc="best")
+#     plt.title('How people are reacting on "' + keyword.upper() + '" by analyzing ' + str(number) + ' Tweets.')
+#     plt.axis('equal')
+#     plt.tight_layout()
+#     plt.show()
+
+def manual_rules(input):
+    allowed_word_types = ["J", "V"]
+    tokens = word_tokenize(input)
+    pos = nltk.pos_tag(tokens)
+    has_allowed_words = False
+    all_words = []
+    for w in pos:
+        if w[1][0] in stop_words:
+            continue
+        elif w[1][0] not in allowed_word_types:
+            continue
+        else:
+            all_words.append(w[0].lower())
+            has_allowed_words = True
+
+    filtered_input = ' '.join(str(x) for x in all_words)
+
+    print("ALL WORDS",all_words)
+    print("FILTERED INPUT",filtered_input)
+
+    if has_allowed_words:
+        # Classify with machine learning classifier
+        result = ml_classifiers.sentiment(filtered_input)
+
+        # Negation Handling
+        # Check for sentiment inversion
+        if result[0] == 'pos' and should_invert(input):
+            result = ('neg', result[1])
+        elif result[0] == 'neg' and should_invert(input):
+            result = ('pos', result[1])
+
+        # Sentiment score calculation
+        # Might need filtering before calculating the score
+        score = sentiment_score(input)
+
+        # Check for polarity flips
+        if should_invert(input):
+            score *= -1
+
+        if result[0] == 'pos':
+            return (result, score)
+        elif result[0] == 'neg':
+            return (result, score)
+    else:
+        return (('neutral', 100), 0)
+
 
 
 
 if __name__== "__main__":
     print("Running script")
+    analyzeTwitter("westworld", 3)
+    

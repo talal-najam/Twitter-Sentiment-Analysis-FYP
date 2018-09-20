@@ -1,0 +1,103 @@
+<html>
+  <head>
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+    <title>Results</title>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+      // Load the Visualization API and the corechart package.
+      google.charts.load('current', {'packages':['corechart']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart() {
+
+        // Create the data table.
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Sentiment');
+        data.addColumn('number', 'Number');
+        data.addRows([
+          ['Positive', {{positive_percentage}}],
+          ['Negative', {{negative_percentage}}],
+          ['Neutral', {{neutral_percentage}}],
+        ]);
+
+        // var moredata = new google.visualization.DataTable();
+        // data.addColumn('string', 'Sentiment');
+        // data.addColumn('number', 'Number');
+        // data.addRows([
+        //   ['Positive', {{positive}}],
+        //   ['Negative', {{negative}}],
+        //   ['Neutral', {{neutral}}],
+        // ]);
+
+        // Set chart options
+        var options = {'title':'Pie chart for sentiment on: {{ keyword }}',
+                       'width':600,
+                       'height':600,
+                        'colors': ['#096d04', '#e00202', '#f4c542']};
+
+        var moreOptions= {
+              title: 'Bar chart for sentiment on: {{ keyword }}',
+              hAxis: {title: 'Sentiment Analysis', titleTextStyle: {color: 'red'}},
+              colors: ['red','green'],
+              height: 600,
+              width: 600,
+              is3D:true
+        };
+
+        var moredata = new google.visualization.arrayToDataTable([
+         ['String', 'Sentiment', { role: 'style' }],
+         ['Positive', {{positive_percentage}}, '#096d04'],            // RGB value
+         ['Negative', {{negative_percentage}}, '#e00202'],            // English color name
+         ['Neutral', {{neutral_percentage}}, '#f4c542'],
+        ]);
+
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        chart.draw(data, options);
+        var anotherChart = new google.visualization.ColumnChart(document.getElementById('chart'));
+        anotherChart.draw(moredata, moreOptions);
+      }
+    </script>
+  </head>
+
+  <body>
+    {% include 'includes/_navbar.html' %}
+
+    <!--Div that will hold the pie chart-->
+    <div class="container">
+        <div class="mb-0">
+            <h2 class="text-center m-0 p-0">How people are reacting on {{keyword}}</h2>
+            <h5 class="text-center m-0 p-0">Top 3 Tweets on "{{ keyword }}"</h2>
+            <ul class="list-group dec text-justfiy">
+                {% for tweet in total_tweets[:3] %}
+                    {% if tweet[1] == 1 %}
+                    <li class="list-group-item list-group-item-success">{{loop.index}}: {{tweet[0]}}</li>
+                    {% elif tweet[1] == -1 %}
+                    <li class="list-group-item list-group-item-danger">{{loop.index}}: {{tweet[0]}}</li>
+                    {% elif tweet[1] == 0 %}
+                    <li class="list-group-item list-group-item-warning">{{loop.index}}: {{tweet[0]}}</li>
+                    {% endif %}
+                {% endfor %} 
+            </ul>
+        </div>      
+
+        <div class="row mt-0">
+            <div class="col-md-5">
+                <div id="chart_div"></div>
+            </div>
+            <div class="col-md-7">
+               <div id="chart"></div>
+            </div>
+        </div>
+    </div>
+    
+  </body>
+</html>

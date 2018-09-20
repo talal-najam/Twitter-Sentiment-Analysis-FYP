@@ -78,8 +78,8 @@ for p in short_neg.split('\n')[:3000]:
         elif w[1][0] in allowed_word_types:
             all_words.append(w[0].lower())
 
-print("after allowed word types: ")
-print(all_words[:50])
+# print("after allowed word types: ")
+# print(all_words[:50])
 
 save_documents = open("LIMITED_PICKLES/documents.pickle","wb")
 pickle.dump(documents, save_documents)
@@ -89,9 +89,6 @@ save_documents.close()
 all_words = nltk.FreqDist(all_words)
 
 word_features = list(all_words.keys())[:5000]
-
-# print("Word features ")
-# print(word_features[:20])
 
 
 save_word_features = open("LIMITED_PICKLES/word_features5k.pickle","wb")
@@ -117,13 +114,11 @@ print(len(featuresets))
 training_set = featuresets[:3000]
 testing_set =  featuresets[3000:4000]
 
-
  
 classifier = NaiveBayesClassifier.train(training_set)
 print("Original Naive Bayes Algo accuracy percent:", (nltk.classify.accuracy(classifier, testing_set))*100)
 classifier.show_most_informative_features(15)
 
-###############
 save_classifier = open("LIMITED_PICKLES/originalnaivebayes5k.pickle","wb")
 pickle.dump(classifier, save_classifier)
 save_classifier.close()
