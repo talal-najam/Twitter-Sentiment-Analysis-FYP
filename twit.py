@@ -7,22 +7,23 @@ import nltk
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from score_calculator import sentiment_score
+from config import c_key, c_secret, a_token, a_token_secret
 
 
-"""
-TODO: 
-> Add the two parameters of keyword and number of tweets to search to the download data function.
-  As we want to take the parameters directly as a request from the web page by the user.
-> Somehow import the class into the main package and try working out with textblob to see
-  if we can perform sentiment analysis on the given input from user
-> Alternatively, somehow bring the input fields from that classes and call them here, perform the 
-  data and then return the results there, but that doesn't seem right for some reason
-> Need to display the result on the webpage rather than just plotting on IDE, should be done
-  by somehow returning the result to the webpage and use chartJS or some tech to plot graph 
-  dynamically on the webpage.
+# #################################################################################################
+# Author: Talal Najam
+# Date  : 21/12/2018
+# Github: https://github.com/mistat44
+# 
+# 
+# Steps needed to carry out the project
+# 1. Add the two parameters of keyword and number of tweets to search to the download data function. As we want to take the parameters directly as a request from the web page by the user.
+# 2. Somehow import the class into the main package and try working out with textblob to see if we can perform sentiment analysis on the given input from user
+# 3. Alternatively, somehow bring the input fields from that classes and call them here, perform the data and then return the results there, but that doesn't seem right for some reason
+# 4. Need to display the result on the webpage rather than just plotting on IDE, should be done by somehow returning the result to the webpage and use chartJS or some tech to plot graph dynamically on the webpage.
+# #################################################################################################
 
-"""
-
+# Create a set for stop words
 stop_words = set(stopwords.words("english"))
 
 def analyzeTwitter(keyword, number):
@@ -105,14 +106,6 @@ def analyzeTwitter(keyword, number):
     # finding average reaction
     polarity = polarity / number
 
-    # pidict = {}
-    # pidict['positive'] = positive
-    # pidict['negative'] = negative
-    # pidict['neutral'] = neutral
-
-
-    # plotPieChart(positive, negative, neutral, keyword, number)
-
     return positiveTweets, negativeTweets, total_tweets, chartdict, positive_percentage, negative_percentage, neutral_percentage
 
 
@@ -121,9 +114,10 @@ def percentage(part, whole):
     temp = 100 * float(part) / float(whole)
     return format(temp, '.2f')
 
+# # # # # # USED GOOGLE CHARTS INSTEAD OF MATPLOTLIB # # # # # #
+# 
+#  
 # def plotPieChart(positive, negative, neutral, keyword, number):
-
-   
 #     labels = ['Positive [' + str(positive) + '%]', 'Neutral [' + str(neutral) + '%]','Negative [' + str(negative) + '%]']
 #     sizes = [positive, neutral, negative]
 #     colors = ['darkgreen', 'gold', 'red']
@@ -173,13 +167,13 @@ def manual_rules(input):
         if should_invert(input):
             score *= -1
 
+        # Assign result values
         if result[0] == 'pos':
             return (result, score)
         elif result[0] == 'neg':
             return (result, score)
     else:
         return (('neutral', 100), 0)
-
 
 
 

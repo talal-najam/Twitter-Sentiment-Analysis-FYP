@@ -1,7 +1,0 @@
-TODO: 
-d   > Need to go to uni and train the sklearn classifiers from high-ram computers
-    > Need to work on test cases 
-    > Need to make sure all form validations are in check in the front-end
-    > Need to make sure Error handling is taken care of and all files are closed
-d   > Remember you have the source code for the sentdex original code
-    > Need to add the customer classifier .classify function in the cohesive classify function 
