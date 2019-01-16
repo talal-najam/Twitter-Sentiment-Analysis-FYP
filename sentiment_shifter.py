@@ -1,3 +1,9 @@
+# #################################################################################################
+# Author: Talal Najam
+# Date  : 21/12/2018
+# Github: https://github.com/mistat44
+# #################################################################################################
+
 from nltk.tokenize import word_tokenize
 # short_pos = open("short_reviews/positive.txt", "r").read()
 

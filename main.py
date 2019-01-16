@@ -1,3 +1,9 @@
+# #################################################################################################
+# Author: Talal Najam
+# Date  : 21/12/2018
+# Github: https://github.com/mistat44
+# #################################################################################################
+
 from flask import Flask, render_template, flash, redirect, url_for, session, request, logging, jsonify
 import twit as SentimentAnalysis
 from sentiment_shifter import should_invert
@@ -10,13 +16,7 @@ from score_calculator import sentiment_score
 
 import requests
 
-# #################################################################################################
-# Author: Talal Najam
-# Date  : 21/12/2018
-# Github: https://github.com/mistat44
-# 
-# 
-# Steps needed to carry out the project
+# Steps:- 
 # 1. Take input from a user in terms of keywords [D]
 # 2. Take the amount of tweets needed to be analyzed (default = 5) [D]
 # 3. Stream the related tweets and the same amount of tweets
@@ -24,7 +24,6 @@ import requests
 # 5. Plot the results on the graph
 # 6. Return the result effectively and display them
 # 8. Use the preProcessText function 
-# #################################################################################################
 
 
 # Init Flask

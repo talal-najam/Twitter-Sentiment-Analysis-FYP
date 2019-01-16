@@ -1,3 +1,9 @@
+# #################################################################################################
+# Author: Talal Najam
+# Date  : 21/12/2018
+# Github: https://github.com/mistat44
+# #################################################################################################
+
 import os
 from xml.etree import cElementTree
 from nltk.tokenize import word_tokenize, sent_tokenize

@@ -1,6 +1,8 @@
-## @Talal Najam
-## Sentdex NLTK Series p.19
-## Sentiment Analysis module
+# #################################################################################################
+# Author: Talal Najam
+# Date  : 21/12/2018
+# Github: https://github.com/mistat44
+# #################################################################################################
 
 import nltk
 import random
