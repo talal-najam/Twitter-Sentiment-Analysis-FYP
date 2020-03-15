@@ -14,6 +14,7 @@ from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from score_calculator import sentiment_score
 from config import c_key, c_secret, a_token, a_token_secret
+import os
  
 # Create a set for stop words
 stop_words = set(stopwords.words("english"))
@@ -21,10 +22,10 @@ stop_words = set(stopwords.words("english"))
 def analyzeTwitter(keyword, number):
 
     # auth
-    consumerKey = "vPocvAU7dFdrGhbBxkt4Ab6tu"
-    consumerSecret = "V2qoxlzAqtRs5NQ5ifJI3Tx0DsaCycUpBaXvKTSi1LCTWV2VG2"
-    accessToken = "1139826878-qBQpLdy1E96PJrMLpg9IFbT11QuZDbV3dydHIHp"
-    accessTokenSecret = "fu0igad1yHFFvP2rvNPLk2aOjTaAPaCOJaL2JXKVpn5T6"
+    consumerKey = os.env.get("consumerKey")
+    consumerSecret = os.env.get("consumerSecret")
+    accessToken = os.env.get("accessToken")
+    accessTokenSecret = os.env.get("accessTokenSecret")
 
     tweets = []
     positiveTweets = []
@@ -105,20 +106,6 @@ def analyzeTwitter(keyword, number):
 def percentage(part, whole):
     temp = 100 * float(part) / float(whole)
     return format(temp, '.2f')
-
-# # # # # # USED GOOGLE CHARTS INSTEAD OF MATPLOTLIB # # # # # #
-# 
-#  
-# def plotPieChart(positive, negative, neutral, keyword, number):
-#     labels = ['Positive [' + str(positive) + '%]', 'Neutral [' + str(neutral) + '%]','Negative [' + str(negative) + '%]']
-#     sizes = [positive, neutral, negative]
-#     colors = ['darkgreen', 'gold', 'red']
-#     patches, texts = plt.pie(sizes, colors=colors, startangle=90)
-#     plt.legend(patches, labels, loc="best")
-#     plt.title('How people are reacting on "' + keyword.upper() + '" by analyzing ' + str(number) + ' Tweets.')
-#     plt.axis('equal')
-#     plt.tight_layout()
-#     plt.show()
 
 def manual_rules(input):
     allowed_word_types = ["J", "V"]
